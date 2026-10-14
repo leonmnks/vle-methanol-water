@@ -15,9 +15,7 @@ point condition:
 x₁·P₁°(T) + (1 - x₁)·P₂°(T) - P = 0
 ```
 
-This equation is implicit in `T` and has no closed-form solution: the unknown
-appears inside two separate exponential terms (one per component), so it cannot
-be isolated algebraically.
+This equation is implicit in `T` and has no closed-form solution: the unknown.
 
 It is solved numerically with Brent's method. The search interval is bounded by
 the normal boiling points of the two pure components — the mixture must boil
