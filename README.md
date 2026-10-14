@@ -83,9 +83,8 @@ Antoine coefficients, valid for `P` in mmHg and `T` in °C, in the form
 | Methanol  | 8.08097 | 1582.271 | 239.726 |
 | Water     | 8.07131 | 1730.630 | 233.426 |
 
-*(Add the source you took these from — a textbook appendix, NIST, or Perry's
-Handbook. Antoine coefficients vary between sources and are only valid over a
-limited temperature range, so the citation matters.)*
+*The source for these specific values was Claude, but we can find these in textbooks 
+which I currenctly didnt have.
 
 ## Verification
 
