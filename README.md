@@ -64,9 +64,6 @@ Raoult's law due to hydrogen bonding — so the predicted vapor is less enriched
 in methanol than experiment shows, and the predicted bubble point temperatures
 are slightly high.
 
-The natural next step is to introduce activity coefficients via the Wilson or
-NRTL model and compare against published experimental VLE data.
-
 ## Usage
 
 ```bash
