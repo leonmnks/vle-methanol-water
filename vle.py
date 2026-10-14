@@ -46,25 +46,46 @@ def bubble_point(x1, P, comp1, comp2):
 def main():
    water = (8.07131, 1730.63, 233.426)
    methanol = (8.08097, 1582.271, 239.726)
-   print(bubble_point_temperature(0.5, 760, methanol, water))
-   T, y1 = bubble_point(0.5, 760, methanol, water)
-   print(f"Bubble point temperature: {T:.2f} °C, Vapor mole fraction of component 1: {y1:.4f}")
-   x_vals = np.linspace(0, 1, 11)
+
+   x1 = float(input("Please enter the fraction of methanol in the binary mixture: "))
+   P = float(input("Please enter the Pressure in Pa: "))
+   P = P/133.322
+
+   T, y1 = bubble_point(x1, P, methanol, water)
+   print(" ")
+   print(" ")
+   print(f"Bubble point temperature of the binary mixture at {P:.2f} mmHg and at x1 = {x1}: {T:.2f} °C")
+   print(" ")
+   print(f"Vapor mole fraction of component 1: {y1:.4f}")
+   x_vals = np.linspace(0, 1, 101)
    y_vals = []
    T_vals = []
+   
    for x1 in x_vals:
-      T, y1 = bubble_point(x1, 760, methanol, water)
+      T, y1 = bubble_point(x1, P, methanol, water)
       T_vals.append(T)
       y_vals.append(y1)
    plt.figure(figsize=(6, 6))
-   plt.plot(x_vals, y_vals, label='Bubble Point Temperature (°C)', color='blue')
+   plt.plot(x_vals, y_vals, label='Equilibrium Curve', color='blue')
    plt.plot([0, 1], [0, 1], "k--", label = "y=x")
    plt.xlabel('Liquid Mole Fraction of Methanol (x1)')
    plt.ylabel('Vapor Mole Fraction of Methanol (y1)')
-   plt.title('Vapor-Liquid Equilibrium Curve for Methanol-Water System at 760 mmHg')
-   plt.legend(["Equilibrium Curve", "y=x Line"])
+   plt.title(f'Vapor-Liquid Equilibrium Curve for Methanol-Water System at {P} mmHg')
+   plt.legend()
    plt.grid(alpha=0.3)
+   plt.savefig('Equilibrium_Curve.png', dpi=300)
    plt.show()
-    
 
-main()
+   plt.figure(figsize=(6, 6))
+   plt.plot(x_vals, T_vals, label='bubble point curve', color='blue')
+   plt.plot([0, 1], [0, 1], "k--", label = "y=x")
+   plt.xlabel('Liquid Mole Fraction of Methanol (x1)')
+   plt.ylabel('Bubble Point Temperature (°C)')
+   plt.title(f'Bubble Point Temperature for Methanol-Water System at {P} mmHg')
+   plt.legend()
+   plt.grid(alpha=0.3)
+   plt.savefig('Bubble_Point_Temperature.png', dpi=300)
+   plt.show()
+
+if __name__ == "__main__":
+    main()
