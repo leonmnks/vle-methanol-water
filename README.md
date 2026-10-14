@@ -54,9 +54,9 @@ purity: going from x₁ = 0.10 to y₁ = 0.28 in a single stage is nearly a
 tripling, while x₁ = 0.90 yields only y₁ = 0.97. This is why distillation
 columns need progressively more stages toward the top.
 
-![x-y diagram](xy_diagram.png)
+![x-y diagram](Equilibrium_Curve.png)
 
-![T-x-y diagram](txy_diagram.png)
+![T-x-y diagram](Bubble_Point_Temperature.png)
 
 ## Assumptions and limitations
 
