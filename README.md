@@ -86,13 +86,3 @@ Antoine coefficients, valid for `P` in mmHg and `T` in °C, in the form
 *The source for these specific values was Claude, but we can find these in textbooks 
 which I currenctly didnt have.
 
-## Verification
-
-The code checks itself on three things before computing anything:
-
-- `antoine_inverse(100, water)` returns 760 mmHg — the known normal boiling point
-- `antoine(760, methanol)` returns 64.55 °C — literature value 64.7 °C
-- `antoine(antoine_inverse(T))` returns `T` — the two Antoine forms are mutual inverses
-
-At the endpoints, `x₁ = 0` and `x₁ = 1` return `y₁ = 0` and `y₁ = 1` exactly,
-as they must for pure components.
