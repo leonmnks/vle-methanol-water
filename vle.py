@@ -120,7 +120,7 @@ def main():
    plt.ylim(0, 1)
    plt.legend()
    plt.grid(alpha=0.3)
-   plt.savefig('Equilibrium_Curve.png', dpi=150, bbox_inches='tight')
+   plt.savefig('Equilibrium_Curve_.png', dpi=150, bbox_inches='tight')
    plt.show()
 
    plt.figure(figsize=(7, 5))
@@ -133,7 +133,7 @@ def main():
    plt.title(f'Bubble Point Temperature for Methanol-Water System at {P:.0f} mmHg')
    plt.legend()
    plt.grid(alpha=0.3)
-   plt.savefig('Bubble_Point_Temperature.png', dpi=150, bbox_inches='tight')
+   plt.savefig('Bubble_Point_Temperature_.png', dpi=150, bbox_inches='tight')
    plt.show()
    
 if __name__ == "__main__":
