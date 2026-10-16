@@ -1,134 +1,196 @@
-# Vapor–Liquid Equilibrium: Methanol–Water
+# Ισορροπία ατμού–υγρού: μεθανόλη και νερό
 
-Calculates bubble point temperatures and equilibrium vapor compositions for a
-binary methanol–water mixture, under two thermodynamic models: ideal behaviour
-(Raoult's law) and non-ideal behaviour (van Laar activity coefficients). The
-difference between them is the point of the project.
+Ένα πρόγραμμα σε Python που υπολογίζει **σε ποια θερμοκρασία βράζει** ένα μίγμα
+μεθανόλης και νερού, και **τι σύσταση έχει ο ατμός** που βγαίνει από πάνω του.
 
-## The problem
+Το κάνει με δύο διαφορετικές θερμοδυναμικές προσεγγίσεις και τις συγκρίνει. Η
+σύγκριση είναι και το νόημα του project.
 
-For a binary mixture at fixed total pressure `P`, the bubble point temperature
-is the temperature at which the partial pressures of both components first sum
-to `P`:
+## Γιατί έχει σημασία
 
-```
-x₁·γ₁·P₁°(T) + x₂·γ₂·P₂°(T) - P = 0
-```
+Όταν βράζεις ένα μίγμα δύο υγρών, ο ατμός **δεν έχει την ίδια σύσταση με το
+υγρό**. Το πιο πτητικό συστατικό φεύγει ευκολότερα, οπότε ο ατμός είναι
+εμπλουτισμένος σε αυτό.
 
-This equation is implicit in `T` and has no closed-form solution: the unknown
-appears inside two separate exponential terms, one per component, and cannot be
-isolated algebraically.
+Αυτή ακριβώς η διαφορά είναι ο λόγος που λειτουργεί η απόσταξη. Συμπυκνώνεις τον
+ατμό, τον ξαναβράζεις, και κάθε φορά ανεβαίνεις σε καθαρότητα. Για να σχεδιάσεις
+μια στήλη απόσταξης — πόσες βαθμίδες χρειάζεται, πόση ενέργεια — πρέπει πρώτα να
+ξέρεις πόσο μεγάλη είναι αυτή η διαφορά σε κάθε σύσταση.
 
-It is solved numerically with Brent's method. The search interval is bounded by
-the normal boiling points of the two pure components, widened by 20 °C — the
-margin matters, because with activity coefficients a mixture can boil *below*
-both pure boiling points, which is what an azeotrope is.
+Αυτό υπολογίζει το πρόγραμμα.
 
-Once `T` is known, the vapor composition follows directly:
+## Πώς βρίσκουμε την τάση ατμών
 
-```
-y₁ = x₁·γ₁·P₁°(T) / P
-```
-
-Setting γ₁ = γ₂ = 1 recovers Raoult's law, so both models run through the same
-solver and the same code path.
-
-## Why ideal isn't enough
-
-Methanol and water both hydrogen-bond, but not equally well with each other as
-with themselves. Mixing them is energetically unfavourable relative to the ideal case, so molecules escape to the vapor more readily than Raoult's law predicts.
-This is a **positive deviation**, and it means γ > 1 for both components.
-
-The van Laar model captures this with two parameters:
+Κάθε καθαρό υγρό έχει μια τάση ατμών που εξαρτάται από τη θερμοκρασία: όσο πιο
+ζεστό, τόσο πιο πολύ «σπρώχνει» προς την αέρια φάση. Η σχέση δίνεται από την
+**εξίσωση Antoine**:
 
 ```
-ln γ₁ = A₁₂ / [1 + (A₁₂·x₁)/(A₂₁·x₂)]²
-ln γ₂ = A₂₁ / [1 + (A₂₁·x₂)/(A₁₂·x₁)]²
+log₁₀(P°) = A − B / (T + C)
 ```
 
-At the composition extremes the coefficients reach their infinite-dilution
-limits, γ₁∞ = exp(A₁₂) and γ₂∞ = exp(A₂₁).
+Τα A, B, C είναι σταθερές που διαφέρουν για κάθε ουσία και προκύπτουν από
+μετρήσεις. Το `P°` είναι η τάση ατμών του **καθαρού** συστατικού στη θερμοκρασία
+T — δηλαδή πόσο θα έσπρωχνε αν ήταν μόνο του.
 
-## Results
+Όταν φτάσει τα 760 mmHg, το υγρό βράζει.
 
-At 760 mmHg with an equimolar liquid (x₁ = 0.5):
+## Το πρόβλημα με τα μίγματα
 
-| | T (°C) | y₁ |
-|---|---:|---:|
-| Raoult (ideal) | 76.82 | 0.7953 |
-| van Laar | 73.03 | 0.7866 |
-| Experimental (literature) | — | ≈0.78 |
+Σε μίγμα, κάθε συστατικό συνεισφέρει ανάλογα με το **πόσο υπάρχει** στο υγρό. Αν η
+μεθανόλη είναι το 50% των μορίων, συνεισφέρει το μισό από ό,τι θα συνεισέφερε
+καθαρή. Αυτός είναι ο **νόμος του Raoult**:
 
-The non-ideal model boils **3.8 °C lower** and predicts a vapor composition
-closer to experiment. At 1500 mmHg and x₁ = 0.32 the gap is larger still:
-102.86 °C ideal against 96.82 °C with activity coefficients.
+```
+y₁ · P = x₁ · P₁°(T)
+```
 
-A detail worth noting: Δy₁ is slightly **negative**, even though both activity
-coefficients exceed 1. At x₁ = 0.5 the coefficients are γ₁ = 1.137 and
-γ₂ = 1.222 — water is the more strongly enhanced of the two at this
-composition, because γ₁ falls from its maximum at infinite dilution while γ₂
-rises toward its own. Water's partial pressure is boosted proportionally more,
-so methanol's share of the vapor drops marginally even as the total pressure
-rises and the mixture boils earlier.
+όπου `x₁` η σύσταση στο υγρό και `y₁` στον ατμό.
 
-Both models converge at the pure-component limits, as they must: at x₁ = 0 and
-x₁ = 1 there is only one species present, γ = 1 by definition, and the two
-curves meet.
+Το μίγμα βράζει όταν οι συνεισφορές των δύο συστατικών μαζί φτάσουν την εξωτερική
+πίεση. Επειδή τα δύο κλάσματα του ατμού αθροίζονται στη μονάδα, προκύπτει η
+**συνθήκη σημείου φυσαλίδας**:
 
-![Equilibrium curve](Equilibrium_Curve.png)
+```
+x₁ · P₁°(T) + x₂ · P₂°(T) − P = 0
+```
 
-![Bubble point temperature](Bubble_Point_Temperature.png)
+**Αυτή η εξίσωση δεν λύνεται με το χέρι.** Η θερμοκρασία που ψάχνεις κρύβεται μέσα
+σε δύο εκθετικούς όρους ταυτόχρονα — έναν για κάθε `P°` — και δεν απομονώνεται με
+άλγεβρα.
 
-## Assumptions and limitations
+Η λύση είναι αριθμητική. Αντί να ρωτάς «ποια είναι η θερμοκρασία;», ρωτάς «αν
+δοκιμάσω αυτή τη θερμοκρασία, πόσο έξω πέφτω;». Η παραπάνω παράσταση είναι ακριβώς
+αυτό: μηδενίζεται στη σωστή θερμοκρασία, είναι αρνητική αν είσαι χαμηλά, θετική αν
+είσαι ψηλά. 
 
-**Ideal vapor phase.** Both models treat the vapor as an ideal gas. At
-atmospheric pressure this is a reasonable approximation; at elevated pressures
-it is not, and a fugacity coefficient would be needed.
+Η αναζήτηση γίνεται ανάμεσα στα σημεία βρασμού των δύο καθαρών υγρών, γιατί το
+μίγμα πρέπει να βράζει κάπου εκεί ανάμεσα.
 
-**Temperature-independent van Laar parameters.** In the two-parameter form used
-here, A₁₂ and A₂₁ are constants. They are in reality weakly temperature
-dependent. Over the 64–100 °C range of this system the error is tolerable, but
-the model should not be used far outside it.
+Μόλις βρεθεί η θερμοκρασία, η σύσταση του ατμού βγαίνει κατευθείαν:
 
-**Antoine validity range.** The Antoine coefficients are valid over a limited
-temperature range. The program will happily return a bubble point at 15000 mmHg,
-but that result should not be trusted.
+```
+y₁ = x₁ · P₁°(T) / P
+```
 
-**Fitted, not primary, parameters.** The van Laar constants below are a
-least-squares fit published in a secondary source, not primary tabulated data
-from a reference collection such as DECHEMA. Comparison against a full experimental x–y
-dataset across the composition range is the natural next step.
+## Γιατί το απλό μοντέλο δεν αρκεί
 
-## Usage
+Ο νόμος του Raoult υποθέτει ότι τα δύο υγρά αναμιγνύονται χωρίς αλληλεπιδράσεις — ότι ένα μόριο μεθανόλης δεν νοιάζεται αν έχει δίπλα του μεθανόλη ή νερό.
+
+Στην πραγματικότητα νοιάζεται. Και η μεθανόλη και το νερό σχηματίζουν δεσμούς
+υδρογόνου, αλλά τα καταφέρνουν **καλύτερα με τον εαυτό τους παρά μεταξύ τους**.
+Όταν τα αναμίξεις, κάθε μόριο βρίσκεται σε λιγότερο βολικό περιβάλλον απ' ό,τι
+ήταν πριν — οπότε δραπετεύει ευκολότερα στην αέρια φάση.
+
+Η διόρθωση γίνεται με τους **συντελεστές ενεργότητας** γ, έναν για κάθε
+συστατικό:
+
+```
+x₁ · γ₁ · P₁°(T) + x₂ · γ₂ · P₂°(T) − P = 0
+
+y₁ = x₁ · γ₁ · P₁°(T) / P
+```
+
+Το γ λέει «πόσο πιο πρόθυμα φεύγει το συστατικό απ' ό,τι θα περίμενες». Τιμή 1
+σημαίνει ακριβώς ιδανική συμπεριφορά — και τότε οι εξισώσεις γίνονται ξανά αυτές
+του Raoult. Εδώ τα γ είναι μεγαλύτερα από 1, άρα το μίγμα βράζει **χαμηλότερα**.
+
+## Από πού βγαίνουν τα γ
+
+Δεν είναι σταθερές — αλλάζουν με τη σύσταση. Χρειάζεσαι μοντέλο. Εδώ
+χρησιμοποιείται το **van Laar**, που έχει δύο παραμέτρους:
+
+```
+ln γ₁ = A₁₂ / [1 + (A₁₂ · x₁) / (A₂₁ · x₂)]²
+
+ln γ₂ = A₂₁ / [1 + (A₂₁ · x₂) / (A₁₂ · x₁)]²
+```
+
+Οι δύο εκφράσεις είναι συμμετρικές.
+
+Στα άκρα συμβαίνει κάτι χρήσιμο. Όταν ένα συστατικό είναι σχεδόν ανύπαρκτο —
+λίγες σταγόνες μεθανόλης σε πολύ νερό — ο συντελεστής του φτάνει τη **μέγιστη
+τιμή** του:
+
+```
+γ₁∞ = exp(A₁₂) = 2.32
+γ₂∞ = exp(A₂₁) = 1.71
+```
+
+Αυτές οι τιμές είναι μετρήσιμες πειραματικά, οπότε χρησιμεύουν ως έλεγχος: αν οι
+παράμετροι που βρήκες δίνουν γ∞ = 8, κάτι δεν πάει καλά.
+
+Και στο άλλο άκρο, όταν ένα συστατικό είναι καθαρό, το γ του γίνεται **ακριβώς 1**
+— δεν υπάρχει άλλο μόριο να προκαλέσει απόκλιση. Γι' αυτό τα δύο μοντέλα δίνουν
+πάντα το ίδιο αποτέλεσμα στα καθαρά συστατικά.
+
+## Τι βρήκαμε
+
+Σε ατμοσφαιρική πίεση, με υγρό 50% μεθανόλη – 50% νερό:
+
+|                        | Βράζει στους | Ο ατμός έχει μεθανόλη |
+|          ---           |      ---:    |         ---:          |
+| Απλό μοντέλο (Raoult)  |    76.8 °C   |        79.5%          |
+| Με διόρθωση (van Laar) |    73.0 °C   |        78.7%          |
+| Πείραμα                |       —      |        ~78%           |
+
+Η διόρθωση φέρνει το αποτέλεσμα πιο κοντά στην πραγματικότητα, και δείχνει ότι το
+μίγμα βράζει σχεδόν **4 βαθμούς χαμηλότερα** απ' ό,τι θα υπολόγιζες αφελώς —
+διαφορά που σε πραγματική μονάδα μεταφράζεται σε ενέργεια και κόστος.
+
+![Καμπύλη ισορροπίας](Equilibrium_Curve.png)
+
+Στο διάγραμμα, η διαγώνιος είναι η γραμμή «ο ατμός έχει ίδια σύσταση με το υγρό».
+Όσο πιο μακριά βρίσκεται η καμπύλη από αυτήν, τόσο ευκολότερος ο διαχωρισμός. Και
+οι δύο καμπύλες ενώνονται στα άκρα — εκεί υπάρχει μόνο ένα συστατικό, οπότε δεν
+υπάρχει τίποτα να διαχωριστεί.
+
+## Τι δεν κάνει καλά
+
+**Υποθέτει ιδανικό αέριο.** Σε ατμοσφαιρική πίεση είναι εντάξει. Σε υψηλές πιέσεις
+δεν είναι, και θα χρειαζόταν συντελεστής τάσης διαφυγής.
+
+**Τα A₁₂ και A₂₁ δεν αλλάζουν με τη θερμοκρασία.** Στην πραγματικότητα αλλάζουν
+λίγο. Για το εύρος 64–100 °C που μας αφορά, η διαφορά είναι ανεκτή.
+
+**Οι συντελεστές Antoine ισχύουν σε περιορισμένο εύρος.** Το πρόγραμμα θα σου
+δώσει ευχαρίστως αποτέλεσμα στα 20 bar, αλλά αυτό είναι προέκταση εκτός ορίων και
+δεν πρέπει να το εμπιστευτείς.
+
+**Οι παράμετροι είναι από δευτερογενή πηγή.** Δεν είναι πρωτογενή δεδομένα από
+συλλογή αναφοράς όπως το DECHEMA, αλλά προσαρμογή που δημοσίευσαν άλλοι. Περνάνε
+τον έλεγχο του γ∞ και αναπαράγουν το πειραματικό αποτέλεσμα με σφάλμα ~1%, αλλά
+ένα σημείο δεν είναι επαλήθευση. Η σύγκριση με πλήρες σετ πειραματικών δεδομένων
+είναι το επόμενο βήμα.
+
+## Πώς τρέχει
 
 ```bash
 pip install -r requirements.txt
 python vle.py
 ```
 
-The program asks for a liquid composition and a pressure, prints both models
-side by side with their difference, and writes the x–y and T–x–y diagrams as
-PNG files.
+Σου ζητάει τη σύσταση του υγρού και την πίεση, τυπώνει τα δύο μοντέλα δίπλα-δίπλα
+με τη διαφορά τους, και φτιάχνει τα διαγράμματα ως αρχεία PNG.
 
-## Data
+## Δεδομένα και πηγές
 
-**Antoine equation**, `log₁₀(P°) = A - B/(T + C)`, with `P°` in mmHg and `T` in °C:
+**Συντελεστές Antoine**, με P° σε mmHg και T σε °C:
 
-| Component | A | B | C |
+| Συστατικό | A | B | C |
 |-----------|---------|----------|---------|
-| Methanol  | 8.08097 | 1582.271 | 239.726 |
-| Water     | 8.07131 | 1730.630 | 233.426 |
+| Μεθανόλη  | 8.08097 | 1582.271 | 239.726 |
+| Νερό      | 8.07131 | 1730.630 | 233.426 |
 
-*Source: I got the constants from ClaudeAI*
+*Πηγή: <<Σταθερές απο ClaudeAI>>*
 
-**van Laar parameters** for methanol(1)–water(2) at 101.325 kPa:
+**Παράμετροι van Laar** για μεθανόλη(1)–νερό(2), προσαρμοσμένες σε ισοβαρή
+δεδομένα στα 101.325 kPa:
 
 ```
 A₁₂ = 0.8407    A₂₁ = 0.5386
 ```
 
-*Source: "Estimation of Activity Coefficients for Binary Mixture VLE Data using
-MATLAB", IARJSET (2016), Table 2. These are least-squares fitted values, not
-primary tabulated data.*
-
-Please let me know about any mistake i made, or about any way to improve the program!
+*Πηγή: "Estimation of Activity Coefficients for Binary Mixture VLE Data using
+MATLAB", IARJSET (2016), Πίνακας 2. Είναι τιμές από προσαρμογή ελαχίστων
+τετραγώνων, όχι πρωτογενή δεδομένα.*
