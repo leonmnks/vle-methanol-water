@@ -36,8 +36,7 @@ solver and the same code path.
 ## Why ideal isn't enough
 
 Methanol and water both hydrogen-bond, but not equally well with each other as
-with themselves. Mixing them is energetically unfavourable relative to the ideal
-case, so molecules escape to the vapor more readily than Raoult's law predicts.
+with themselves. Mixing them is energetically unfavourable relative to the ideal case, so molecules escape to the vapor more readily than Raoult's law predicts.
 This is a **positive deviation**, and it means γ > 1 for both components.
 
 The van Laar model captures this with two parameters:
@@ -89,18 +88,15 @@ it is not, and a fugacity coefficient would be needed.
 **Temperature-independent van Laar parameters.** In the two-parameter form used
 here, A₁₂ and A₂₁ are constants. They are in reality weakly temperature
 dependent. Over the 64–100 °C range of this system the error is tolerable, but
-the model should not be extrapolated far outside it.
+the model should not be used far outside it.
 
 **Antoine validity range.** The Antoine coefficients are valid over a limited
 temperature range. The program will happily return a bubble point at 15000 mmHg,
-but that result is an extrapolation and should not be trusted.
+but that result should not be trusted.
 
 **Fitted, not primary, parameters.** The van Laar constants below are a
 least-squares fit published in a secondary source, not primary tabulated data
-from a reference collection such as DECHEMA. They pass a sanity check
-(γ₁∞ = 2.32, γ₂∞ = 1.71, both consistent with moderate positive deviation) and
-reproduce the equimolar vapor composition to within about 1%, but a single-point
-agreement is not a validation. Comparison against a full experimental x–y
+from a reference collection such as DECHEMA. Comparison against a full experimental x–y
 dataset across the composition range is the natural next step.
 
 ## Usage
@@ -123,10 +119,9 @@ PNG files.
 | Methanol  | 8.08097 | 1582.271 | 239.726 |
 | Water     | 8.07131 | 1730.630 | 233.426 |
 
-*Source: <<ADD YOUR SOURCE HERE>>*
+*Source: I got the constants from ClaudeAI*
 
-**van Laar parameters** for methanol(1)–water(2), fitted to isobaric VLE data at
-101.325 kPa:
+**van Laar parameters** for methanol(1)–water(2) at 101.325 kPa:
 
 ```
 A₁₂ = 0.8407    A₂₁ = 0.5386
@@ -136,16 +131,4 @@ A₁₂ = 0.8407    A₂₁ = 0.5386
 MATLAB", IARJSET (2016), Table 2. These are least-squares fitted values, not
 primary tabulated data.*
 
-## Verification
-
-The code checks itself before computing anything:
-
-- `psat(100, water)` returns 760 mmHg — the known normal boiling point
-- `tsat(760, methanol)` returns 64.55 °C — literature value 64.7 °C
-- `tsat(psat(T))` returns `T` — the two Antoine forms are mutual inverses
-- `van_laar` at x₁ = 0 and x₁ = 1 returns the infinite-dilution limits
-- `van_laar` with vanishingly small parameters returns γ ≈ 1, recovering ideality
-- The van Laar coefficients are symmetric under index exchange (1↔2)
-
-At the endpoints, x₁ = 0 and x₁ = 1 return y₁ = 0 and y₁ = 1 exactly under both
-models, as they must for pure components.
+Please let me know about any mistake i made, or about any way to improve the program!
